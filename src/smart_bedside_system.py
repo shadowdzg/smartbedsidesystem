@@ -26,7 +26,8 @@ class SmartBedsideSystem:
         self.spo2_hr_sensor.begin()
         self.spo2_hr_sensor.sensor_start_collect()
 
-        self.alarm_on = False  # Replace None by initializing the alarm status (see User Story #2).
+        GPIO.setup(self.BUZZER_PIN, GPIO.OUT)
+        self.alarm_on = False
 
         self.o2_servo = None  # Replace None by initializing the servo motor's PWM instance (see User Story #4).
         self.o2_valve_angle = None  # Replace None by initializing the valve angle, in degrees (see User Story #4).
@@ -47,11 +48,10 @@ class SmartBedsideSystem:
         Activate or deactivate the alarm based on the patient's blood oxygen saturation (SpO₂).
         Raises: SmartBedsideError: If the SpO₂ reading is invalid (propagated from read_vital_signs()).
         """
-        # See User Story #2.
-        spo2 = self.spo2_hr_sensor.get_spo2()
-        if spo2 < 88:
-            self.SmartBedsideSystem.alarm_on = True
-        return self.SmartBedsideSystem
+        spo2 = self.read_vital_signs()
+        self.alarm_on = spo2 < 88
+        GPIO.output(self.BUZZER_PIN, self.alarm_on)
+
     def stop_alarm(self) -> None:
         """
         Stop the alarm if the pushbutton is pressed. Otherwise, leave the alarm unchanged.
