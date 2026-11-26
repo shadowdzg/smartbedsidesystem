@@ -25,6 +25,7 @@ class SmartBedsideSystem:
         self.spo2_hr_sensor = DFRobot_BloodOxygen_S()
         self.spo2_hr_sensor.begin()
         self.spo2_hr_sensor.sensor_start_collect()
+        self.spo2_hr_sensor.get_heartbeat()
 
         GPIO.setup(self.BUZZER_PIN, GPIO.OUT)
 
@@ -34,16 +35,21 @@ class SmartBedsideSystem:
         self.o2_servo = None  # Replace None by initializing the servo motor's PWM instance (see User Story #4).
         self.o2_valve_angle = None  # Replace None by initializing the valve angle, in degrees (see User Story #4).
 
-    def read_vital_signs(self) -> int:
+    def read_vital_signs(self) -> list:
         """
         Read the patient's blood oxygen saturation (SpO₂).
         Returns: int: SpO₂ percentage (70–100).
         Raises: SmartBedsideError: If the sensor returns an invalid reading (-1).
         """
         spo2 = self.spo2_hr_sensor.get_spo2()
+
+        hb= self.spo2_hr_sensor.get_heartbeat()
+
         if spo2 == -1:
             raise SmartBedsideError
-        return spo2
+        if hb == -1:
+            raise SmartBedsideError
+        return [spo2,hb]
 
     def manage_alarm(self) -> None:
         """
